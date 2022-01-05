@@ -18,6 +18,7 @@ def main():
 
     st.title("FPL TEAM ANALYSIS")
     st.subheader("Shows user performance per week and across full season")
+    st.markdown("<h1 style='text-align: center; color: red;'>Centred Text</h1>", unsafe_allow_html=True)
 
     league_id = st.number_input("What is your league id?", step=1)
     search_type = st.selectbox("Review weekly or overall stats?", tuple(points_type.keys()))
