@@ -1,0 +1,1 @@
+web: sh setup.sh && streamlit run fpl_leagues_app.py
