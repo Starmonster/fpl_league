@@ -8,20 +8,33 @@ import requests
 
 # Build the main plotting function
 # Let's use plotly to display the visualisations
-def get_plotly(points_df, rank_df, league_name):
+def get_plotly(points_df, rank_df, league_name, points_type):
     """
     Here we'll code for plotly displays which will be more interactive and suited to web deployment
     """
 
+    # Revise the points type to suit our plotting labels
+    if points_type == "points":
+        points_type = "Weekly"
+    else:
+        points_type = "Overall"
+
+    # Set tick and label fontsize
+    yaxis = dict(tickfont=dict(size=16), titlefont=dict(size=18))
+    xaxis = dict(tickfont=dict(size=16), titlefont=dict(size=18))
+
     # Plot the players points
     fig = px.line(points_df, x=points_df.gameweek, y=points_df.columns,
-                  title=f"{league_name} - Player Points"
+                  title=f"{league_name} - {points_type} Player Points"
                   )
     fig.update_traces(line=dict(width=5))
     fig.update_layout(
         xaxis_title="GW",
-        yaxis_title="Player Points",
+        yaxis_title=f"{points_type} Player Points",
         legend_title="Player",
+        title_font_size=20,
+        yaxis=yaxis,
+        xaxis=xaxis,
         width=1000,
         height=650
     )
@@ -36,10 +49,13 @@ def get_plotly(points_df, rank_df, league_name):
     fig1.update_traces(line=dict(width=5))
     fig1.update_layout(
         xaxis_title="GW",
-        yaxis_title="Player Rank",
+        yaxis_title=f"{points_type} Player Rank",
         legend_title="Player",
+        title_font_size=20,
+        yaxis=yaxis,
+        xaxis=xaxis,
         width=1000,
-        height=650,
+        height=650
     )
     #fig1.show()
 
@@ -159,8 +175,19 @@ def focussed(pts_frame, player_select):
     # Get the index of the users row
     index_of_user = user_row.index[0]
 
-    #  Get the users three above and two below (Maybe people want to look up slightly more than down!)
-    rivals = latest.iloc[index_of_user - 2: index_of_user + 3]  # Rememeber when slicing we need to end one index higher
+    lower_bound = 0
+    upper_bound = 3
+
+    if index_of_user >= 2:
+        lower_bound = index_of_user - 2
+    else:
+        lower_bound = index_of_user - index_of_user
+
+    # Get the users three above and two below (Maybe people want to look up slightly more than down!)
+    rivals = latest.iloc[lower_bound: index_of_user + upper_bound]
+    # Rememeber when slicing we need to end one index higher at the upper bound
+
+
 
     # Then get the complete plotset for these "rivals"
     names = rivals.name.tolist()
