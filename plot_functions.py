@@ -196,3 +196,5 @@ def focussed(pts_frame, player_select):
     return pts_frame
 
 
+# The following functions calculate and return the league stats
+

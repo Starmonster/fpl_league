@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-from functions import *
+from plot_functions import *
+from stat_functions import *
 
 
 
@@ -28,7 +29,7 @@ def main():
     #          "in a local league up to a maximum of fifty players. Alternatively a player can focus the "
     #          "comparison to their nearest rivals only - in which case the two players in front of an behind"
     #          "the requested player will be displayed on the plot")
-    st.markdown("<p style='text-align: center;'> Enter your FPL league id to generate user performance plots and statistics!</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'> Enter your FPL league id to generate manager performance plots and statistics!</p>", unsafe_allow_html=True)
 
     # section_select = st.sidebar.text_input("Jump to Section", "Title")
     # title_link = f"<a href='#linkto_title'>Title</a>",unsafe_allow_html=True
@@ -38,12 +39,16 @@ def main():
     # st.write(section_sel)
 
 
-    league_id = st.number_input("What is your league id?", step=1, value=671315)
+    league_id = st.number_input("Enter your league id", step=1, value=671315)
     search_type = st.selectbox("Review weekly or overall stats?", tuple(points_type.keys()))
 
+    # Call in the current league data from get_league function (see plot_functions.py)
+    # To solve updating league periods - consider adding try/except block here to manage this issue
+    try:
+        standings, league_name = get_league(league_id)
+    except:
+        st.write("The League is updating, please hang on!!")
 
-    # Call in the current league data from get_league function (see functions.py)
-    standings, league_name = get_league(league_id)
 
     # Call in the league points data
     points_df, gw_number = get_points(search_type, standings)
@@ -69,7 +74,6 @@ def main():
     rank_cols = points_df.columns
     rank_df = rank_df[rank_cols.tolist()]
 
-
     # Add the gameweek number to our plotting dataframes
     points_df["gameweek"] = list(range(1, points_df.shape[0] + 1))
     rank_df["gameweek"] = list(range(1, rank_df.shape[0] + 1))
@@ -86,6 +90,36 @@ def main():
     # st.write(points_df.iloc[0])
     # st.write(points_df.columns.tolist())
     st.markdown(f"<div id='linkto_title>Jump to Here<div/>", unsafe_allow_html=True)
+
+    # STATS SECTION
+    stat_header=""
+    if search_type=="points":
+        stat_header = f"""<h2 style='text-align: center; color: white;'>Gameweek League Stats<h2/>"""
+    else:
+        stat_header = f"""<h2 style='text-align: center; color: white;'>Season League Stats<h2/>"""
+
+    st.markdown(stat_header, unsafe_allow_html=True)
+
+    if search_type == "points":
+        rank_dict, pts_dict = stats_handler(rank_df, points_df)
+
+        st.text(f"{rank_dict['high_ranks']['high_rank_name']} has the most high scores with {rank_dict['high_ranks']['high_rank_score']} high scores")
+        with st.expander("See top 5 ranked managers"):
+            st.dataframe(rank_dict['high_ranks']['high_rank_five'].head())
+
+        st.text(f"{rank_dict['low_ranks']['low_rank_name']} has the most low scores with {rank_dict['low_ranks']['low_rank_score']} low scores")
+        with st.expander("See bottom 5 ranked managers"):
+            st.dataframe(rank_dict['low_ranks']['low_rank_five'].head())
+
+        st.text(f"{pts_dict['high_points']['high_points_name']} has the single highest score with {pts_dict['high_points']['high_points_score']} in gw??")
+        with st.expander("See top 5 mangers by highest score"):
+            st.dataframe(pts_dict['high_points']['high_points_five'].head())
+
+        st.text(f"{pts_dict['low_points']['low_points_name']} has the single lowest score with {pts_dict['low_points']['low_points_score']} in gw??")
+        with st.expander("See top 5 managers by lowest score"):
+            st.dataframe(pts_dict['low_points']['low_points_five'].head())
+    else:
+        st.text("Season stats go here!! Work in Progress!!")
 
 
 if __name__ == "__main__":
